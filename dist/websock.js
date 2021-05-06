@@ -295,7 +295,6 @@ class Websock {
         this.browseractivityTimeout = 180000;
         console.log("config:");
         console.log(config);
-        this.browserActivity.register(() => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity(); }, () => { console.log("browseractivity callback reactivating..."); this.connect(); });
         let port = '';
         if (config.port) {
             port = ':' + port;
@@ -308,6 +307,7 @@ class Websock {
             this.browseractivityTimeout = config.browseractivityTimeout;
         }
         this.browserActivity = new _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__.default(this.browseractivityTimeout, 5000);
+        this.browserActivity.register(() => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity(); }, () => { console.log("browseractivity callback reactivating..."); this.connect(); });
     }
     subscribe(channel_name, callback, key) {
         const response = { status: "success" };

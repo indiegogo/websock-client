@@ -77,10 +77,6 @@ export default class Websock {
   public constructor (config: Config) {
     console.log("config:")
     console.log(config)
-    this.browserActivity.register(
-      () => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity() },
-      () => { console.log("browseractivity callback reactivating..."); this.connect() }
-    )
     let port: string = '';
     if(config.port){
       port = ':' + port;
@@ -89,6 +85,10 @@ export default class Websock {
     if(config.heartbeatMs){ this.heartbeatMs = config.heartbeatMs }
     if(config.browseractivityTimeout){ this.browseractivityTimeout = config.browseractivityTimeout }
     this.browserActivity = new BrowserActivity(this.browseractivityTimeout, 5000);
+    this.browserActivity.register(
+      () => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity() },
+      () => { console.log("browseractivity callback reactivating..."); this.connect() }
+    )
   }
 
   public subscribe (channel_name: string, callback: MessageCallbackFunction, key: string): SubscriptionResponse {
