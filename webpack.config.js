@@ -17,8 +17,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist'),
     library: {
       name: 'Websock',
-      type: 'var',
-      export: 'default',
+      type: 'umd',
+      export: 'default'
     }
   }
 };
