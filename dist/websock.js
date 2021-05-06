@@ -398,7 +398,7 @@ class Websock {
         return [50, 100, 200, 500, 1000, 2000, 5000][tries - 1] || 10000;
     }
     hearbeatInterval(tries) {
-        return 50000;
+        return 5000;
     }
 }
 

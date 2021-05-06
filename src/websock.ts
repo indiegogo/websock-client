@@ -181,6 +181,6 @@ console.log(callback)
   }
 
   private hearbeatInterval (tries: number): number {
-    return 50000;
+    return 5000;
   }
 }
