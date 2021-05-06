@@ -297,7 +297,7 @@ class Websock {
         console.log(config);
         let port = '';
         if (config.port) {
-            port = ':' + port;
+            port = ':' + config.port;
         }
         this.connectionString = config.url + port + "/sock";
         if (config.heartbeatMs) {
