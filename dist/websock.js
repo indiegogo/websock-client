@@ -1,3 +1,4 @@
+var Websock;
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
@@ -394,5 +395,6 @@ class Websock {
 
 })();
 
+Websock = __webpack_exports__.default;
 /******/ })()
 ;

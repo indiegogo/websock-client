@@ -15,5 +15,10 @@ module.exports = {
   output: {
     filename: 'websock.js',
     path: path.resolve(__dirname, 'dist'),
+    library: {
+      name: 'Websock',
+      type: 'var',
+      export: 'default',
+    }
   }
 };
