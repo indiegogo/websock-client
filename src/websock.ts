@@ -20,6 +20,13 @@ type SocketMessage = {
 
 type MessageCallbackFunction = (message: any) => void;
 
+export type Config = {
+  url: string;
+  port?: string;
+  heartbeatMs?: number;
+  browseractivityTimeout?: number;
+}
+
 class Channel {
   callbacks: MessageCallbackFunction[] = [];
   keyedCallbacks: { [key: string]: MessageCallbackFunction[] } = {};
@@ -59,22 +66,29 @@ export default class Websock {
   initialConnection: boolean = true;
   channels: { [key: string]: Channel } = {};
   socket: WebSocket | null = null;
-  heartbeatTimer: Timer = new Timer(() => { this.pingHeartbeat() }, this.hearbeatInterval)
+  hearbeatInterval: ReturnType<typeof setInterval>;
   reconnectTimer: Timer = new Timer(() => { this.connect() }, this.reconnectAfterMs)
-  browserActivity: BrowserActivity = new BrowserActivity(1800000, 5000);
+  browserActivity: BrowserActivity;
   closeWasClean: boolean = false;
   connectionString: string;
+  heartbeatMs: number = 50000;
+  browseractivityTimeout: number = 180000;
 
-  public constructor (url: string, port_number?: string) {
+  public constructor (config: Config) {
+    console.log("config:")
+    console.log(config)
     this.browserActivity.register(
       () => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity() },
       () => { console.log("browseractivity callback reactivating..."); this.connect() }
     )
     let port: string = '';
-    if(port_number){
-      port = ':' + port_number;
+    if(config.port){
+      port = ':' + port;
     }
-    this.connectionString = url + port + "/sock"
+    this.connectionString = config.url + port + "/sock"
+    if(config.heartbeatMs){ this.heartbeatMs = config.heartbeatMs }
+    if(config.browseractivityTimeout){ this.browseractivityTimeout = config.browseractivityTimeout }
+    this.browserActivity = new BrowserActivity(this.browseractivityTimeout, 5000);
   }
 
   public subscribe (channel_name: string, callback: MessageCallbackFunction, key: string): SubscriptionResponse {
@@ -125,7 +139,7 @@ console.log(callback)
   }
 
   private handleConnectionOpen(): void {
-    this.heartbeatTimer.scheduleTimeout();
+    this.startHeartBeat();
     this.reconnectTimer.reset();
     this.resubscribeChannels();
     this.browserActivity.startWatching()
@@ -134,21 +148,20 @@ console.log(callback)
   private handleConnectionClose(): void {
     if(!this.closeWasClean){
       console.log("unexpected connection close...")
-      this.initialConnection = false;
       this.browserActivity.stopWatching();
       this.reconnectTimer.scheduleTimeout();
     }
+    this.stopHeartBeat();
+    this.initialConnection = false;
   }
 
   private closeDueToInactivity(): void {
     console.log("closeDueToInactivity")
-    this.heartbeatTimer.reset();
     if(this.socket.readyState === WebSocket.OPEN){
       console.log("connection was open, closing")
       this.closeWasClean = true;
       this.socket.close(1000);
     }
-    this.initialConnection = false;
   }
 
   private connectChannel (channel_name: string, socket: WebSocket): void {
@@ -171,16 +184,21 @@ console.log(callback)
     }
   }
 
+  private startHeartBeat(): void {
+    clearInterval(this.hearbeatInterval);
+    this.hearbeatInterval = setInterval(() => { this.pingHeartbeat() }, this.heartbeatMs);
+  }
+
+  private stopHeartBeat(): void {
+    clearInterval(this.hearbeatInterval);
+  }
+
   private pingHeartbeat(): void {
-    console.log("pingHeartbeat")
-    this.socket.send(JSON.stringify({heart: "beat"}))
+    console.log("pingHeartbeat");
+    this.socket.send(JSON.stringify({heart: "beat"}));
   }
 
   private reconnectAfterMs (tries: number): number {
     return [50, 100, 200, 500, 1000, 2000, 5000][tries - 1] || 10000;
-  }
-
-  private hearbeatInterval (tries: number): number {
-    return 5000;
   }
 }

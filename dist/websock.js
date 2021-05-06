@@ -285,20 +285,29 @@ class Channel {
     }
 }
 class Websock {
-    constructor(url, port_number) {
+    constructor(config) {
         this.initialConnection = true;
         this.channels = {};
         this.socket = null;
-        this.heartbeatTimer = new _timer_ts__WEBPACK_IMPORTED_MODULE_0__.default(() => { this.pingHeartbeat(); }, this.hearbeatInterval);
         this.reconnectTimer = new _timer_ts__WEBPACK_IMPORTED_MODULE_0__.default(() => { this.connect(); }, this.reconnectAfterMs);
-        this.browserActivity = new _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__.default(1800000, 5000);
         this.closeWasClean = false;
+        this.heartbeatMs = 50000;
+        this.browseractivityTimeout = 180000;
+        console.log("config:");
+        console.log(config);
         this.browserActivity.register(() => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity(); }, () => { console.log("browseractivity callback reactivating..."); this.connect(); });
         let port = '';
-        if (port_number) {
-            port = ':' + port_number;
+        if (config.port) {
+            port = ':' + port;
         }
-        this.connectionString = url + port + "/sock";
+        this.connectionString = config.url + port + "/sock";
+        if (config.heartbeatMs) {
+            this.heartbeatMs = config.heartbeatMs;
+        }
+        if (config.browseractivityTimeout) {
+            this.browseractivityTimeout = config.browseractivityTimeout;
+        }
+        this.browserActivity = new _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__.default(this.browseractivityTimeout, 5000);
     }
     subscribe(channel_name, callback, key) {
         const response = { status: "success" };
@@ -347,7 +356,7 @@ class Websock {
         }
     }
     handleConnectionOpen() {
-        this.heartbeatTimer.scheduleTimeout();
+        this.startHeartBeat();
         this.reconnectTimer.reset();
         this.resubscribeChannels();
         this.browserActivity.startWatching();
@@ -355,20 +364,19 @@ class Websock {
     handleConnectionClose() {
         if (!this.closeWasClean) {
             console.log("unexpected connection close...");
-            this.initialConnection = false;
             this.browserActivity.stopWatching();
             this.reconnectTimer.scheduleTimeout();
         }
+        this.stopHeartBeat();
+        this.initialConnection = false;
     }
     closeDueToInactivity() {
         console.log("closeDueToInactivity");
-        this.heartbeatTimer.reset();
         if (this.socket.readyState === WebSocket.OPEN) {
             console.log("connection was open, closing");
             this.closeWasClean = true;
             this.socket.close(1000);
         }
-        this.initialConnection = false;
     }
     connectChannel(channel_name, socket) {
         // If the connection is already open, we need to subscribe now as the open
@@ -390,15 +398,19 @@ class Websock {
             this.socket.send(JSON.stringify({ subscribe: channel_name }));
         }
     }
+    startHeartBeat() {
+        clearInterval(this.hearbeatInterval);
+        this.hearbeatInterval = setInterval(() => { this.pingHeartbeat(); }, this.heartbeatMs);
+    }
+    stopHeartBeat() {
+        clearInterval(this.hearbeatInterval);
+    }
     pingHeartbeat() {
         console.log("pingHeartbeat");
         this.socket.send(JSON.stringify({ heart: "beat" }));
     }
     reconnectAfterMs(tries) {
         return [50, 100, 200, 500, 1000, 2000, 5000][tries - 1] || 10000;
-    }
-    hearbeatInterval(tries) {
-        return 5000;
     }
 }
 
