@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory();
+		module.exports = factory(require("typescript-logging"));
 	else if(typeof define === 'function' && define.amd)
-		define([], factory);
+		define(["typescript-logging"], factory);
 	else if(typeof exports === 'object')
-		exports["Websock"] = factory();
+		exports["Websock"] = factory(require("typescript-logging"));
 	else
-		root["Websock"] = factory();
-})(self, function() {
+		root["Websock"] = factory(root["typescript-logging"]);
+})(self, function(__WEBPACK_EXTERNAL_MODULE__4__) {
 return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ([
@@ -51,6 +51,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ BrowserActivity)
 /* harmony export */ });
+/* harmony import */ var _logger_ts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(3);
+
+var logger = new _logger_ts__WEBPACK_IMPORTED_MODULE_0__.default("BrowserActivity");
 const PressEvents = ['mousedown', 'keydown', 'touchstart'];
 class BrowserActivity {
     constructor(timeout, windowChangeInterval) {
@@ -71,7 +74,7 @@ class BrowserActivity {
         this.reactivateCallback = reactivateCallback;
     }
     startWatching() {
-        console.log("startWatching");
+        logger.debug("startWatching");
         this.stopped = false;
         PressEvents.forEach((activityEvent) => {
             document.addEventListener(activityEvent, (e) => { this.handlePressActivity(e); }, { once: true });
@@ -80,7 +83,7 @@ class BrowserActivity {
         this.scheduleInactivityCallback();
     }
     stopWatching() {
-        console.log("stopWatching");
+        logger.debug("stopWatching");
         clearInterval(this.timer);
         clearInterval(this.windowWatchTimer);
         this.stopped = true;
@@ -91,7 +94,7 @@ class BrowserActivity {
     //////////////////////////
     // Press activity includes keydown, mousedown, and touchstart, fairly self-describing
     handlePressActivity(event) {
-        console.log("handlePressActivity");
+        logger.debug("handlePressActivity");
         if (this.stopped) {
             return;
         }
@@ -110,7 +113,7 @@ class BrowserActivity {
     }
     // Window activity includes any scrolling or resizing, handled by taking snapshots and comparing
     handleWindowActivity() {
-        console.log("handleWindowActivity");
+        logger.debug("handleWindowActivity");
         if (this.stopped || this.handlingActivity) {
             return;
         }
@@ -124,7 +127,7 @@ class BrowserActivity {
         setTimeout(() => { this.handlingActivity = false; }, 1000);
     }
     reactivate() {
-        console.log("reactivate");
+        logger.debug("reactivate");
         this.inactive = false;
         clearInterval(this.timer);
         clearInterval(this.windowWatchTimer);
@@ -134,12 +137,12 @@ class BrowserActivity {
     // Functions to handle inactivity
     //////////////////////////
     scheduleInactivityCallback() {
-        console.log("scheduleInactivityCallback");
+        logger.debug("scheduleInactivityCallback");
         clearInterval(this.timer);
         this.timer = setInterval(() => { this.checkIfInactive(); }, this.timeout);
     }
     checkIfInactive() {
-        console.log("checkIfInactive");
+        logger.debug("checkIfInactive");
         if (((Date.now() - this.lastActivity) > this.timeout) && !this.windowChanged()) {
             this.deactivate();
         }
@@ -153,19 +156,19 @@ class BrowserActivity {
     // Functions to handle changes to the window--scrolling or resizing
     //////////////////////////
     scheduleWindowWatcher() {
-        console.log("scheduleWindowWatcher");
+        logger.debug("scheduleWindowWatcher");
         this.takeWindowSnapshot();
         clearInterval(this.windowWatchTimer);
         this.windowWatchTimer = setInterval(() => { this.checkIfWindowChanged(); }, this.windowChangeInterval);
     }
     checkIfWindowChanged() {
-        console.log("checkIfWindowChanged");
+        logger.debug("checkIfWindowChanged");
         if (this.windowChanged()) {
             this.handleWindowActivity();
         }
     }
     takeWindowSnapshot() {
-        console.log("takeWindowSnapshot");
+        logger.debug("takeWindowSnapshot");
         this.lastScrollY = window.scrollY;
         this.lastScrollX = window.scrollX;
         this.lastHeight = window.outerHeight;
@@ -179,6 +182,33 @@ class BrowserActivity {
     }
 }
 
+
+/***/ }),
+/* 3 */
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__),
+/* harmony export */   "TSLogger": () => (/* binding */ TSLogger)
+/* harmony export */ });
+/* harmony import */ var typescript_logging__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(4);
+/* harmony import */ var typescript_logging__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(typescript_logging__WEBPACK_IMPORTED_MODULE_0__);
+
+typescript_logging__WEBPACK_IMPORTED_MODULE_0__.CategoryServiceFactory.setDefaultConfiguration(new typescript_logging__WEBPACK_IMPORTED_MODULE_0__.CategoryConfiguration(typescript_logging__WEBPACK_IMPORTED_MODULE_0__.LogLevel.Info));
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (typescript_logging__WEBPACK_IMPORTED_MODULE_0__.Category);
+const TSLogger = {
+    help: typescript_logging__WEBPACK_IMPORTED_MODULE_0__.help,
+    getLogControl: typescript_logging__WEBPACK_IMPORTED_MODULE_0__.getLogControl,
+    getCategoryControl: typescript_logging__WEBPACK_IMPORTED_MODULE_0__.getCategoryControl,
+};
+
+
+/***/ }),
+/* 4 */
+/***/ ((module) => {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE__4__;
 
 /***/ })
 /******/ 	]);
@@ -208,6 +238,18 @@ class BrowserActivity {
 /******/ 	}
 /******/ 	
 /************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
 /******/ 	/* webpack/runtime/define property getters */
 /******/ 	(() => {
 /******/ 		// define getter functions for harmony exports
@@ -242,12 +284,18 @@ var __webpack_exports__ = {};
 (() => {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "TSLogger": () => (/* reexport safe */ _logger_ts__WEBPACK_IMPORTED_MODULE_2__.TSLogger),
 /* harmony export */   "default": () => (/* binding */ Websock)
 /* harmony export */ });
 /* harmony import */ var _timer_ts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _logger_ts__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(3);
 
 
+
+
+
+var logger = new _logger_ts__WEBPACK_IMPORTED_MODULE_2__.default("Websock");
 class Channel {
     constructor() {
         this.callbacks = [];
@@ -268,15 +316,14 @@ class Channel {
         this.keyedCallbacks[key].push(callback);
     }
     handleMessage(message) {
-        console.log("message:");
-        console.log(message);
+        logger.debug({ msg: "handling message", data: message });
         for (let callback_key in this.callbacks) {
             this.callbacks[callback_key](message);
         }
         for (let message_key in this.keyedCallbacks) {
-            console.log("message_key: " + message_key);
+            logger.debug("trying message_key: " + message_key);
             if (typeof message[message_key] !== 'undefined') {
-                console.log("message has key");
+                logger.debug("message has key");
                 for (let callback_key in this.keyedCallbacks[message_key]) {
                     this.keyedCallbacks[message_key][callback_key](message);
                 }
@@ -293,8 +340,7 @@ class Websock {
         this.closeWasClean = false;
         this.heartbeatMs = 50000;
         this.browseractivityTimeout = 180000;
-        console.log("config:");
-        console.log(config);
+        logger.debug({ msg: "config", data: config });
         let port = '';
         if (config.port) {
             port = ':' + config.port;
@@ -307,7 +353,7 @@ class Websock {
             this.browseractivityTimeout = config.browseractivityTimeout;
         }
         this.browserActivity = new _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__.default(this.browseractivityTimeout, 5000);
-        this.browserActivity.register(() => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity(); }, () => { console.log("browseractivity callback reactivating..."); this.connect(); });
+        this.browserActivity.register(() => { this.closeDueToInactivity(); }, () => { this.connect(); });
     }
     subscribe(channel_name, callback, key) {
         const response = { status: "success" };
@@ -323,13 +369,11 @@ class Websock {
         let channel = new Channel();
         channel.addCallback(callback, key);
         this.channels[channel_name] = channel;
-        console.log("igg_websocket subscribe:");
-        console.log(channel_name);
-        console.log(callback);
+        logger.debug({ msg: "subscribe to channel:", data: channel_name });
         return response;
     }
     connect() {
-        console.log("connecting...");
+        logger.debug("connecting...");
         this.closeWasClean = false;
         if (this.socket) {
             this.socket.close();
@@ -340,8 +384,7 @@ class Websock {
         this.socket.addEventListener("close", () => { this.handleConnectionClose(); });
     }
     handleIncoming(event) {
-        console.log("handleIncoming event:");
-        console.log(event);
+        logger.debug({ msg: "handleIncoming event:", data: event });
         let push_event = JSON.parse(event.data);
         switch (push_event.type) {
             case 'USER':
@@ -363,7 +406,7 @@ class Websock {
     }
     handleConnectionClose() {
         if (!this.closeWasClean) {
-            console.log("unexpected connection close...");
+            logger.debug("unexpected connection close...");
             this.browserActivity.stopWatching();
             this.reconnectTimer.scheduleTimeout();
         }
@@ -371,9 +414,9 @@ class Websock {
         this.initialConnection = false;
     }
     closeDueToInactivity() {
-        console.log("closeDueToInactivity");
+        logger.debug("closeDueToInactivity");
         if (this.socket.readyState === WebSocket.OPEN) {
-            console.log("connection was open, closing");
+            logger.debug("connection was open, closing");
             this.closeWasClean = true;
             this.socket.close(1000);
         }
@@ -406,7 +449,7 @@ class Websock {
         clearInterval(this.hearbeatInterval);
     }
     pingHeartbeat() {
-        console.log("pingHeartbeat");
+        logger.debug("pingHeartbeat");
         this.socket.send(JSON.stringify({ heart: "beat" }));
     }
     reconnectAfterMs(tries) {

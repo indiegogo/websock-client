@@ -1,5 +1,10 @@
 import Timer from "./timer.ts"
 import BrowserActivity from "./browser_activity.ts"
+import Category from "./logger.ts"
+import { TSLogger } from "./logger.ts"
+export { TSLogger }
+
+var logger = new Category("Websock");
 
 type SubscriptionSuccess = {
   status: "success"
@@ -20,7 +25,7 @@ type SocketMessage = {
 
 type MessageCallbackFunction = (message: any) => void;
 
-export type Config = {
+type Config = {
   url: string;
   port?: string;
   heartbeatMs?: number;
@@ -45,15 +50,14 @@ class Channel {
   }
 
   public handleMessage (message: any): void {
-    console.log("message:")
-    console.log(message)
+    logger.debug({ msg: "handling message", data: message })
     for(let callback_key in this.callbacks) {
       this.callbacks[callback_key](message)
     }
     for(let message_key in this.keyedCallbacks) {
-      console.log("message_key: " + message_key)
+      logger.debug("trying message_key: " + message_key)
       if(typeof message[message_key] !== 'undefined'){
-        console.log("message has key")
+        logger.debug("message has key")
         for(let callback_key in this.keyedCallbacks[message_key]) {
           this.keyedCallbacks[message_key][callback_key](message)
         }
@@ -75,8 +79,7 @@ export default class Websock {
   browseractivityTimeout: number = 180000;
 
   public constructor (config: Config) {
-    console.log("config:")
-    console.log(config)
+    logger.debug({ msg: "config", data: config })
     let port: string = '';
     if(config.port){
       port = ':' + config.port;
@@ -86,8 +89,8 @@ export default class Websock {
     if(config.browseractivityTimeout){ this.browseractivityTimeout = config.browseractivityTimeout }
     this.browserActivity = new BrowserActivity(this.browseractivityTimeout, 5000);
     this.browserActivity.register(
-      () => { console.log("browseractivity callback inactive..."); this.closeDueToInactivity() },
-      () => { console.log("browseractivity callback reactivating..."); this.connect() }
+      () => { this.closeDueToInactivity() },
+      () => { this.connect() }
     )
   }
 
@@ -104,14 +107,12 @@ export default class Websock {
     let channel: Channel = new Channel();
     channel.addCallback(callback, key);
     this.channels[channel_name] = channel;
-console.log("igg_websocket subscribe:")
-console.log(channel_name)
-console.log(callback)
+    logger.debug({ msg: "subscribe to channel:", data: channel_name })
     return response;
   }
 
   private connect (): void {
-    console.log("connecting...")
+    logger.debug("connecting...")
     this.closeWasClean = false;
     if(this.socket){ this.socket.close() }
     this.socket = new WebSocket(this.connectionString);
@@ -122,8 +123,7 @@ console.log(callback)
   }
 
   private handleIncoming (event: MessageEvent) {
-    console.log("handleIncoming event:")
-    console.log(event)
+    logger.debug({ msg: "handleIncoming event:", data: event })
     let push_event: SocketMessage = JSON.parse(event.data);
     switch (push_event.type) {
       case 'USER':
@@ -147,7 +147,7 @@ console.log(callback)
 
   private handleConnectionClose(): void {
     if(!this.closeWasClean){
-      console.log("unexpected connection close...")
+      logger.debug("unexpected connection close...")
       this.browserActivity.stopWatching();
       this.reconnectTimer.scheduleTimeout();
     }
@@ -156,9 +156,9 @@ console.log(callback)
   }
 
   private closeDueToInactivity(): void {
-    console.log("closeDueToInactivity")
+    logger.debug("closeDueToInactivity")
     if(this.socket.readyState === WebSocket.OPEN){
-      console.log("connection was open, closing")
+      logger.debug("connection was open, closing")
       this.closeWasClean = true;
       this.socket.close(1000);
     }
@@ -194,7 +194,7 @@ console.log(callback)
   }
 
   private pingHeartbeat(): void {
-    console.log("pingHeartbeat");
+    logger.debug("pingHeartbeat");
     this.socket.send(JSON.stringify({heart: "beat"}));
   }
 

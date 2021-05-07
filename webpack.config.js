@@ -10,7 +10,7 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
-    ],
+    ]
   },
   output: {
     filename: 'websock.js',
@@ -20,5 +20,8 @@ module.exports = {
       type: 'umd',
       export: 'default'
     }
+  },
+  externals : {
+    "typescript-logging": "typescript-logging"
   }
 };

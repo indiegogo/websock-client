@@ -1,3 +1,6 @@
+import Category from "./logger.ts"
+var logger = new Category("BrowserActivity");
+
 type Callback = () => void;
 const PressEvents = [ 'mousedown', 'keydown', 'touchstart' ];
 
@@ -30,7 +33,7 @@ export default class BrowserActivity {
   }
 
   public startWatching(): void {
-    console.log("startWatching")
+    logger.debug("startWatching")
     this.stopped = false;
     PressEvents.forEach((activityEvent) => {
       document.addEventListener(activityEvent, (e) => { this.handlePressActivity(e) }, { once: true});
@@ -40,7 +43,7 @@ export default class BrowserActivity {
   }
 
   public stopWatching(): void {
-    console.log("stopWatching")
+    logger.debug("stopWatching")
     clearInterval(this.timer)
     clearInterval(this.windowWatchTimer)
     this.stopped = true
@@ -53,7 +56,7 @@ export default class BrowserActivity {
 
   // Press activity includes keydown, mousedown, and touchstart, fairly self-describing
   private handlePressActivity(event: Event): void {
-    console.log("handlePressActivity")
+    logger.debug("handlePressActivity")
     if(this.stopped){ return };
     document.addEventListener(event.type, (e) => { this.handlePressActivity(e) }, { once: true });
     if(this.handlingActivity){ return }; // Can't remove an event listener with a bound function, so here we are
@@ -66,7 +69,7 @@ export default class BrowserActivity {
 
   // Window activity includes any scrolling or resizing, handled by taking snapshots and comparing
   private handleWindowActivity(): void {
-    console.log("handleWindowActivity")
+    logger.debug("handleWindowActivity")
     if(this.stopped || this.handlingActivity){ return };
     this.handlingActivity = true;
     if(this.inactive){ this.reactivate() }
@@ -76,7 +79,7 @@ export default class BrowserActivity {
   }
 
   private reactivate(): void {
-    console.log("reactivate")
+    logger.debug("reactivate")
     this.inactive = false;
     clearInterval(this.timer)
     clearInterval(this.windowWatchTimer)
@@ -88,13 +91,13 @@ export default class BrowserActivity {
   //////////////////////////
 
   private scheduleInactivityCallback(): void {
-    console.log("scheduleInactivityCallback")
+    logger.debug("scheduleInactivityCallback")
     clearInterval(this.timer);
     this.timer = setInterval(() => { this.checkIfInactive() }, this.timeout);
   }
 
   private checkIfInactive(): void {
-    console.log("checkIfInactive")
+    logger.debug("checkIfInactive")
     if(((Date.now() - this.lastActivity) > this.timeout) && !this.windowChanged()){
       this.deactivate();
     }
@@ -111,21 +114,21 @@ export default class BrowserActivity {
   //////////////////////////
 
   private scheduleWindowWatcher(): void {
-    console.log("scheduleWindowWatcher")
+    logger.debug("scheduleWindowWatcher")
     this.takeWindowSnapshot();
     clearInterval(this.windowWatchTimer)
     this.windowWatchTimer = setInterval(() => { this.checkIfWindowChanged() }, this.windowChangeInterval)
   }
 
   private checkIfWindowChanged(): void {
-    console.log("checkIfWindowChanged")
+    logger.debug("checkIfWindowChanged")
     if(this.windowChanged()){
       this.handleWindowActivity()
     }
   }
 
   private takeWindowSnapshot(): void {
-    console.log("takeWindowSnapshot")
+    logger.debug("takeWindowSnapshot")
     this.lastScrollY = window.scrollY;
     this.lastScrollX = window.scrollX;
     this.lastHeight = window.outerHeight;
