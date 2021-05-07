@@ -2088,7 +2088,8 @@ class Channel {
         this.keyedCallbacks[key].push(callback);
     }
     handleMessage(message) {
-        logger.debug({ msg: "handling message", data: message });
+        logger.debug("Channel handling message:");
+        logger.debug(message);
         for (let callback_key in this.callbacks) {
             this.callbacks[callback_key](message);
         }
@@ -2112,7 +2113,6 @@ class Websock {
         this.closeWasClean = false;
         this.heartbeatMs = 50000;
         this.browseractivityTimeout = 180000;
-        logger.debug({ msg: "config", data: config });
         let port = '';
         if (config.port) {
             port = ':' + config.port;
@@ -2141,7 +2141,6 @@ class Websock {
         let channel = new Channel();
         channel.addCallback(callback, key);
         this.channels[channel_name] = channel;
-        logger.debug({ msg: "subscribe to channel:", data: channel_name });
         return response;
     }
     connect() {
@@ -2156,7 +2155,8 @@ class Websock {
         this.socket.addEventListener("close", () => { this.handleConnectionClose(); });
     }
     handleIncoming(event) {
-        logger.debug({ msg: "handleIncoming event:", data: event });
+        logger.debug("handleIncoming event:");
+        logger.debug(event);
         let push_event = JSON.parse(event.data);
         switch (push_event.type) {
             case 'USER':

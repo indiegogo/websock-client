@@ -47,7 +47,8 @@ class Channel {
   }
 
   public handleMessage (message: any): void {
-    logger.debug({ msg: "handling message", data: message })
+    logger.debug("Channel handling message:")
+    logger.debug(message)
     for(let callback_key in this.callbacks) {
       this.callbacks[callback_key](message)
     }
@@ -76,7 +77,6 @@ export default class Websock {
   browseractivityTimeout: number = 180000;
 
   public constructor (config: Config) {
-    logger.debug({ msg: "config", data: config })
     let port: string = '';
     if(config.port){
       port = ':' + config.port;
@@ -104,7 +104,6 @@ export default class Websock {
     let channel: Channel = new Channel();
     channel.addCallback(callback, key);
     this.channels[channel_name] = channel;
-    logger.debug({ msg: "subscribe to channel:", data: channel_name })
     return response;
   }
 
@@ -120,7 +119,8 @@ export default class Websock {
   }
 
   private handleIncoming (event: MessageEvent) {
-    logger.debug({ msg: "handleIncoming event:", data: event })
+    logger.debug("handleIncoming event:")
+    logger.debug(event)
     let push_event: SocketMessage = JSON.parse(event.data);
     switch (push_event.type) {
       case 'USER':
