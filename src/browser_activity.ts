@@ -1,5 +1,5 @@
-import Category from "./logger.ts"
-var logger = new Category("BrowserActivity");
+const logging = require("ulog")
+var logger = logging("BrowserActivity");
 
 type Callback = () => void;
 const PressEvents = [ 'mousedown', 'keydown', 'touchstart' ];

@@ -1,10 +1,7 @@
 import Timer from "./timer.ts"
 import BrowserActivity from "./browser_activity.ts"
-import Category from "./logger.ts"
-import { TSLogger } from "./logger.ts"
-export { TSLogger }
-
-var logger = new Category("Websock");
+const logging = require("ulog")
+var logger = logging("Websock");
 
 type SubscriptionSuccess = {
   status: "success"
