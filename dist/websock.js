@@ -459,7 +459,6 @@ class Websock {
 
 })();
 
-__webpack_exports__ = __webpack_exports__.default;
 /******/ 	return __webpack_exports__;
 /******/ })()
 ;
