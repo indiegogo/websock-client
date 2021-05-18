@@ -2062,8 +2062,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Websock)
 /* harmony export */ });
-/* harmony import */ var _timer_ts__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
+/* harmony import */ var _timer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var _browser_activity__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
 
 
 const logging = __webpack_require__(3);
@@ -2109,7 +2109,7 @@ class Websock {
         this.initialConnection = true;
         this.channels = {};
         this.socket = null;
-        this.reconnectTimer = new _timer_ts__WEBPACK_IMPORTED_MODULE_0__.default(() => { this.connect(); }, this.reconnectAfterMs);
+        this.reconnectTimer = new _timer__WEBPACK_IMPORTED_MODULE_0__.default(() => { this.connect(); }, this.reconnectAfterMs);
         this.closeWasClean = false;
         this.heartbeatMs = 50000;
         this.browseractivityTimeout = 180000;
@@ -2124,7 +2124,7 @@ class Websock {
         if (config.browseractivityTimeout) {
             this.browseractivityTimeout = config.browseractivityTimeout;
         }
-        this.browserActivity = new _browser_activity_ts__WEBPACK_IMPORTED_MODULE_1__.default(this.browseractivityTimeout, 5000);
+        this.browserActivity = new _browser_activity__WEBPACK_IMPORTED_MODULE_1__.default(this.browseractivityTimeout, 5000);
         this.browserActivity.register(() => { this.closeDueToInactivity(); }, () => { this.connect(); });
     }
     subscribe(channel_name, callback, key) {

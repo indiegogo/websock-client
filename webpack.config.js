@@ -10,7 +10,10 @@ module.exports = {
         use: 'ts-loader',
         exclude: /node_modules/,
       },
-    ]
+    ],
+  },
+  resolve: {
+    extensions: ['.js', '.ts'],
   },
   output: {
     filename: 'websock.js',

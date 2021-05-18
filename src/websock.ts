@@ -1,5 +1,5 @@
-import Timer from "./timer.ts"
-import BrowserActivity from "./browser_activity.ts"
+import Timer from "./timer"
+import BrowserActivity from "./browser_activity"
 const logging = require("ulog")
 var logger = logging("Websock");
 
@@ -33,7 +33,7 @@ class Channel {
   callbacks: MessageCallbackFunction[] = [];
   keyedCallbacks: { [key: string]: MessageCallbackFunction[] } = {};
 
-  public addCallback (callback: MessageCallbackFunction, key: string): void {
+  public addCallback (callback: MessageCallbackFunction, key?: string): void {
     if(key){
       this.addKeyedCallback(callback, key)
     } else {
@@ -91,7 +91,7 @@ export default class Websock {
     )
   }
 
-  public subscribe (channel_name: string, callback: MessageCallbackFunction, key: string): SubscriptionResponse {
+  public subscribe (channel_name: string, callback: MessageCallbackFunction, key?: string): SubscriptionResponse {
     const response: SubscriptionSuccess = { status: "success" }
 
     if(null === this.socket){ this.connect() }
