@@ -149,5 +149,7 @@ test("it handles user inactivity", async () => {
   var event = new KeyboardEvent('keydown', {'keyCode': 37});
   document.dispatchEvent(event);
   await server.connected
-  expect(testWebsock.socket.readyState).toBe(WebSocket.OPEN)
+  setTimeout(() => {
+    expect(testWebsock.socket.readyState).toBe(WebSocket.OPEN)
+  }, 10);
 })
