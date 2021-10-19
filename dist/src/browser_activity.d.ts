@@ -1,0 +1,33 @@
+declare type Callback = () => void;
+export default class BrowserActivity {
+    timeout: number;
+    inactivityCallback: Callback;
+    reactivateCallback: Callback;
+    timer: ReturnType<typeof setTimeout> | null;
+    inactive: boolean;
+    lastActivity: number;
+    scrollingObserver: IntersectionObserver;
+    stopped: boolean;
+    lastScrollY: number;
+    lastScrollX: number;
+    lastHeight: number;
+    lastWidth: number;
+    handlingActivity: boolean;
+    windowChangeInterval: number;
+    windowWatchTimer: ReturnType<typeof setTimeout> | null;
+    constructor(timeout: number, windowChangeInterval: number);
+    register(inactivityCallback: Callback, reactivateCallback: Callback): void;
+    startWatching(): void;
+    stopWatching(): void;
+    private handlePressActivity;
+    private handleWindowActivity;
+    private reactivate;
+    private scheduleInactivityCallback;
+    private checkIfInactive;
+    private deactivate;
+    private scheduleWindowWatcher;
+    private checkIfWindowChanged;
+    private takeWindowSnapshot;
+    private windowChanged;
+}
+export {};
