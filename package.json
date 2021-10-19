@@ -1,10 +1,12 @@
 {
   "name": "websock",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Client library for websock service",
   "main": "./dist/websock.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "webpack --config webpack.config.js",
+    "postbuild": "for f in ./dist/src/*; do mv $f ./dist; done"
   },
   "author": "",
   "license": "ISC",
