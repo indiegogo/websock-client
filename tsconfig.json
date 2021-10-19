@@ -6,6 +6,7 @@
     "target": "es6",
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "declaration": true
   }
 }
