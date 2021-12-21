@@ -9,11 +9,13 @@ declare type SubscriptionFailure = {
 };
 declare type SubscriptionResponse = SubscriptionSuccess | SubscriptionFailure;
 declare type MessageCallbackFunction = (message: any) => void;
+declare type AbstractWebSocket = WebSocket | FakeWebSocket | null;
 declare type Config = {
     url: string;
     port?: string;
     heartbeatMs?: number;
     browseractivityTimeout?: number;
+    liveMode?: boolean;
 };
 declare class Channel {
     callbacks: MessageCallbackFunction[];
@@ -29,7 +31,7 @@ export default class Websock {
     channels: {
         [key: string]: Channel;
     };
-    socket: WebSocket | null;
+    socket: AbstractWebSocket;
     hearbeatInterval: ReturnType<typeof setInterval>;
     reconnectTimer: Timer;
     browserActivity: BrowserActivity;
@@ -37,6 +39,7 @@ export default class Websock {
     connectionString: string;
     heartbeatMs: number;
     browseractivityTimeout: number;
+    config: Config;
     constructor(config: Config);
     subscribe(channel_name: string, callback: MessageCallbackFunction, key?: string): SubscriptionResponse;
     private connect;
@@ -50,5 +53,11 @@ export default class Websock {
     private stopHeartBeat;
     private pingHeartbeat;
     private reconnectAfterMs;
+}
+declare class FakeWebSocket extends EventTarget {
+    readyState: number;
+    constructor(connection: string);
+    send(message: any): void;
+    close(): void;
 }
 export {};

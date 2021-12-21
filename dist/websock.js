@@ -2088,15 +2088,15 @@ class Channel {
         this.keyedCallbacks[key].push(callback);
     }
     handleMessage(message) {
-        logger.debug("Channel handling message:");
-        logger.debug(message);
+        logger.info("Channel handling message:");
+        logger.info(message);
         for (let callback_key in this.callbacks) {
             this.callbacks[callback_key](message);
         }
         for (let message_key in this.keyedCallbacks) {
-            logger.debug("trying message_key: " + message_key);
+            logger.info("trying message_key: " + message_key);
             if (typeof message[message_key] !== 'undefined') {
-                logger.debug("message has key");
+                logger.info("message has key");
                 for (let callback_key in this.keyedCallbacks[message_key]) {
                     this.keyedCallbacks[message_key][callback_key](message);
                 }
@@ -2113,6 +2113,7 @@ class Websock {
         this.closeWasClean = false;
         this.heartbeatMs = 50000;
         this.browseractivityTimeout = 180000;
+        this.config = config;
         let port = '';
         if (config.port) {
             port = ':' + config.port;
@@ -2144,19 +2145,25 @@ class Websock {
         return response;
     }
     connect() {
-        logger.debug("connecting...");
+        logger.info("connecting...");
+        logger.info("websock liveMode: " + this.config.liveMode);
         this.closeWasClean = false;
-        if (this.socket) {
-            this.socket.close();
+        if (this.config.liveMode) {
+            if (this.socket) {
+                this.socket.close();
+            }
+            this.socket = new WebSocket(this.connectionString);
         }
-        this.socket = new WebSocket(this.connectionString);
+        else {
+            this.socket = new FakeWebSocket("");
+        }
         this.socket.addEventListener("message", (event) => { this.handleIncoming(event); });
         this.socket.addEventListener("open", () => { this.handleConnectionOpen(); });
         this.socket.addEventListener("close", () => { this.handleConnectionClose(); });
     }
     handleIncoming(event) {
-        logger.debug("handleIncoming event:");
-        logger.debug(event);
+        logger.info("handleIncoming event:");
+        logger.info(event);
         let push_event = JSON.parse(event.data);
         switch (push_event.type) {
             case 'USER':
@@ -2178,7 +2185,7 @@ class Websock {
     }
     handleConnectionClose() {
         if (!this.closeWasClean) {
-            logger.debug("unexpected connection close...");
+            logger.info("unexpected connection close...");
             this.browserActivity.stopWatching();
             this.reconnectTimer.scheduleTimeout();
         }
@@ -2186,9 +2193,9 @@ class Websock {
         this.initialConnection = false;
     }
     closeDueToInactivity() {
-        logger.debug("closeDueToInactivity");
+        logger.info("closeDueToInactivity");
         if (this.socket.readyState === WebSocket.OPEN) {
-            logger.debug("connection was open, closing");
+            logger.info("connection was open, closing");
             this.closeWasClean = true;
             this.socket.close(1000);
         }
@@ -2221,11 +2228,25 @@ class Websock {
         clearInterval(this.hearbeatInterval);
     }
     pingHeartbeat() {
-        logger.debug("pingHeartbeat");
+        logger.info("pingHeartbeat");
         this.socket.send(JSON.stringify({ heart: "beat" }));
     }
     reconnectAfterMs(tries) {
         return [50, 100, 200, 500, 1000, 2000, 5000][tries - 1] || 10000;
+    }
+}
+class FakeWebSocket extends EventTarget {
+    constructor(connection) {
+        super();
+        this.readyState = WebSocket.OPEN;
+        logger.info("FakeWebSocket initialized");
+    }
+    send(message) {
+        logger.info("sent message to websock service via FakeWebSocket:");
+        logger.info(message);
+    }
+    close() {
+        logger.info("close FakeWebSocket:");
     }
 }
 

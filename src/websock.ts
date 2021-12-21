@@ -22,11 +22,14 @@ type SocketMessage = {
 
 type MessageCallbackFunction = (message: any) => void;
 
+type AbstractWebSocket = WebSocket | FakeWebSocket | null
+
 type Config = {
   url: string;
   port?: string;
   heartbeatMs?: number;
   browseractivityTimeout?: number;
+  liveMode?: boolean;
 }
 
 class Channel {
@@ -47,15 +50,15 @@ class Channel {
   }
 
   public handleMessage (message: any): void {
-    logger.debug("Channel handling message:")
-    logger.debug(message)
+    logger.info("Channel handling message:")
+    logger.info(message)
     for(let callback_key in this.callbacks) {
       this.callbacks[callback_key](message)
     }
     for(let message_key in this.keyedCallbacks) {
-      logger.debug("trying message_key: " + message_key)
+      logger.info("trying message_key: " + message_key)
       if(typeof message[message_key] !== 'undefined'){
-        logger.debug("message has key")
+        logger.info("message has key")
         for(let callback_key in this.keyedCallbacks[message_key]) {
           this.keyedCallbacks[message_key][callback_key](message)
         }
@@ -67,7 +70,7 @@ class Channel {
 export default class Websock {
   initialConnection: boolean = true;
   channels: { [key: string]: Channel } = {};
-  socket: WebSocket | null = null;
+  socket: AbstractWebSocket = null;
   hearbeatInterval: ReturnType<typeof setInterval>;
   reconnectTimer: Timer = new Timer(() => { this.connect() }, this.reconnectAfterMs)
   browserActivity: BrowserActivity;
@@ -75,8 +78,10 @@ export default class Websock {
   connectionString: string;
   heartbeatMs: number = 50000;
   browseractivityTimeout: number = 180000;
+  config: Config
 
   public constructor (config: Config) {
+    this.config = config
     let port: string = '';
     if(config.port){
       port = ':' + config.port;
@@ -108,19 +113,26 @@ export default class Websock {
   }
 
   private connect (): void {
-    logger.debug("connecting...")
+    logger.info("connecting...")
+    logger.info("websock liveMode: " + this.config.liveMode)
     this.closeWasClean = false;
-    if(this.socket){ this.socket.close() }
-    this.socket = new WebSocket(this.connectionString);
+    if(this.config.liveMode){
+      if(this.socket){ this.socket.close() }
+      this.socket = new WebSocket(this.connectionString);
+    } else {
+      this.socket = new FakeWebSocket("")
+    }
 
-    this.socket.addEventListener("message", (event) => { this.handleIncoming(event) })
+
+    this.socket.addEventListener("message", (event: MessageEvent) => { this.handleIncoming(event) })
     this.socket.addEventListener("open", () => { this.handleConnectionOpen() })
     this.socket.addEventListener("close", () => { this.handleConnectionClose() })
   }
 
   private handleIncoming (event: MessageEvent) {
-    logger.debug("handleIncoming event:")
-    logger.debug(event)
+    logger.info("handleIncoming event:")
+    logger.info(event)
+
     let push_event: SocketMessage = JSON.parse(event.data);
     switch (push_event.type) {
       case 'USER':
@@ -144,7 +156,7 @@ export default class Websock {
 
   private handleConnectionClose(): void {
     if(!this.closeWasClean){
-      logger.debug("unexpected connection close...")
+      logger.info("unexpected connection close...")
       this.browserActivity.stopWatching();
       this.reconnectTimer.scheduleTimeout();
     }
@@ -153,15 +165,15 @@ export default class Websock {
   }
 
   private closeDueToInactivity(): void {
-    logger.debug("closeDueToInactivity")
+    logger.info("closeDueToInactivity")
     if(this.socket.readyState === WebSocket.OPEN){
-      logger.debug("connection was open, closing")
+      logger.info("connection was open, closing")
       this.closeWasClean = true;
       this.socket.close(1000);
     }
   }
 
-  private connectChannel (channel_name: string, socket: WebSocket): void {
+  private connectChannel (channel_name: string, socket: AbstractWebSocket): void {
     // If the connection is already open, we need to subscribe now as the open
     // event below may never fire.
     if(this.socket.readyState === WebSocket.OPEN) {
@@ -191,11 +203,28 @@ export default class Websock {
   }
 
   private pingHeartbeat(): void {
-    logger.debug("pingHeartbeat");
+    logger.info("pingHeartbeat");
     this.socket.send(JSON.stringify({heart: "beat"}));
   }
 
   private reconnectAfterMs (tries: number): number {
     return [50, 100, 200, 500, 1000, 2000, 5000][tries - 1] || 10000;
+  }
+}
+
+class FakeWebSocket extends EventTarget {
+  readyState: number = WebSocket.OPEN;
+
+  public constructor(connection: string) {
+    super()
+    logger.info("FakeWebSocket initialized")
+  }
+  public send(message: any): void {
+    logger.info("sent message to websock service via FakeWebSocket:")
+    logger.info(message)
+  }
+
+  public close(): void {
+    logger.info("close FakeWebSocket:")
   }
 }
