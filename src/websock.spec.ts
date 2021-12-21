@@ -21,7 +21,8 @@ beforeAll(() => {
 beforeEach(() => {
   websock = new Websock(
     { url: "ws://localhost",
-      port: "1234"
+      port: "1234",
+      liveMode: true,
     }
   );
   received_messages = [];
