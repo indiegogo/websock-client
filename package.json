@@ -1,6 +1,6 @@
 {
   "name": "websock",
-  "version": "1.0.25",
+  "version": "1.1.0",
   "description": "Client library for websock service",
   "main": "./dist/websock.js",
   "scripts": {
